@@ -2,21 +2,17 @@ package com.example;
 
 import com.example.model.User;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 // TODO: use h2 + hibernate + jdbc for embedded data source
+
+// Annotating a bean, Quarkus CDI
+@ApplicationScoped
 public class UserEmbeddedDB {
-    private static final UserEmbeddedDB INSTANCE = new UserEmbeddedDB();
-
-    private UserEmbeddedDB() {
-    }
-
-    public static UserEmbeddedDB getInstance() {
-        return INSTANCE;
-    }
 
     private final ArrayList<User> usersDb = new ArrayList<>();
 

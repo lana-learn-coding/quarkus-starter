@@ -2,6 +2,7 @@ package com.example;
 
 import com.example.model.User;
 
+import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -13,9 +14,14 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class UserResource {
-    UserEmbeddedDB userDb = UserEmbeddedDB.getInstance();
 
-    // Can return object like spring
+    // Don't use private field injection (even thought it still work)
+    // As it lead to bigger native executable due to graalvm limitations
+    // Package-private (or default) is ok.
+    @Inject
+    UserEmbeddedDB userDb;
+
+    // Can return object like spring.
     // It follow the Jax-RS annotations
     // Most of annotations are spring-like, but not all. find in doc folder for conversions
     @GET
@@ -37,7 +43,6 @@ public class UserResource {
             .map(u -> Response.ok(u).build())
             .orElse(Response.status(404).build());
     }
-
 
     // Body automatically bind to first un-annotated parameter
     // It can be of any type: String, Object,... or models

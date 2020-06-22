@@ -1,17 +1,19 @@
 package com.example;
 
 import com.example.model.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.response.Response;
 import org.apache.http.HttpHeaders;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @QuarkusTest
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UserResourceTest {
     private static final String api = "/api/v1/users";
     private static User user;
@@ -21,7 +23,6 @@ public class UserResourceTest {
     public static void before() {
         updatedUser = new User("updated Test", "updatedTest@email.domain");
         user = new User("test", "test@email.domain");
-        user = UserEmbeddedDB.getInstance().save(user).orElseThrow();
     }
 
     @Test
@@ -60,19 +61,23 @@ public class UserResourceTest {
     }
 
     @Test
-    public void createUser_returnOk() {
-        given()
+    @Order(1)
+    public void createUser_returnOk() throws JsonProcessingException {
+        Response response = given()
             .when()
             .header(HttpHeaders.CONTENT_TYPE, "application/json")
             .body(user)
-            .post(api)
-            .then()
-            .statusCode(201);
+            .post(api);
+        response.then().statusCode(201);
+
+        String body = response.getBody().print();
+        ObjectMapper mapper = new ObjectMapper();
+        user = mapper.readValue(body, User.class);
     }
 
     //  The body test make use of rest-assured
     @Test
-    @Order(1)
+    @Order(2)
     public void updateUser_exist_returnOk() {
         given()
             .when()
@@ -85,7 +90,7 @@ public class UserResourceTest {
     }
 
     @Test
-    @Order(2)
+    @Order(3)
     public void getUser_exist_returnOk() {
         assertNotNull(user.getId());
         given()
@@ -95,7 +100,7 @@ public class UserResourceTest {
     }
 
     @Test
-    @Order(3)
+    @Order(4)
     public void deleteUser_exist_returnOk() {
         assertNotNull(user.getId());
         given()
