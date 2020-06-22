@@ -8,6 +8,8 @@ import io.restassured.response.Response;
 import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.*;
 
+import java.util.UUID;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -54,8 +56,11 @@ public class UserResourceTest {
 
     @Test
     public void deleteUser_notExist_returnOk() {
+        // As the user use UUID as id, if we dont give the server
+        // the correct uuid format, then it will reject with 404
+        // without even run the
         given()
-            .when().delete(api + "/fakeIdThatShouldNotExist")
+            .when().delete(api + "/" + UUID.randomUUID())
             .then()
             .statusCode(200);
     }

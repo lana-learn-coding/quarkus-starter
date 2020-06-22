@@ -1,6 +1,7 @@
-package com.example;
+package com.example.resouce;
 
 import com.example.model.User;
+import com.example.service.UserService;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -8,6 +9,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Path("/api/v1/users")
@@ -19,7 +21,7 @@ public class UserResource {
     // As it lead to bigger native executable due to graalvm limitations
     // Package-private (or default) is ok.
     @Inject
-    UserEmbeddedDB userDb;
+    UserService userDb;
 
     // Can return object like spring.
     // It follow the Jax-RS annotations
@@ -27,17 +29,17 @@ public class UserResource {
     @GET
     public List<User> fetchAllUser(@QueryParam("name") String name) {
         if (name != null) {
-            return userDb.findAllUser()
+            return userDb.findAll()
                 .stream()
                 .filter(user -> user.getName().contains(name))
                 .collect(Collectors.toList());
         }
-        return userDb.findAllUser();
+        return userDb.findAll();
     }
 
     @GET
     @Path("/{id}")
-    public Response fetchUser(@PathParam("id") String id) {
+    public Response fetchUser(@PathParam("id") UUID id) {
         Optional<User> user = userDb.findOne(id);
         return user
             .map(u -> Response.ok(u).build())
@@ -56,9 +58,9 @@ public class UserResource {
 
     @PUT
     @Path("/{id}")
-    public Response updateUser(@PathParam("id") String id, User user) {
+    public Response updateUser(@PathParam("id") UUID id, User user) {
         user.setId(id);
-        if (!userDb.isExist(id)) {
+        if (!userDb.exist(id)) {
             return Response.status(404).build();
         }
         return userDb.save(user)
@@ -68,8 +70,8 @@ public class UserResource {
 
     @DELETE
     @Path("/{id}")
-    public Response deleteUser(@PathParam("id") String id) {
+    public Response deleteUser(@PathParam("id") UUID id) {
         userDb.delete(id);
-        return Response.ok().build();
+        return Response.status(200).build();
     }
 }
